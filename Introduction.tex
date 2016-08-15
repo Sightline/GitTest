@@ -1,0 +1,252 @@
+\begin{frame}
+\huge{Introduction}
+\end{frame}
+
+\begin{frame}{What is an Autonomous System?}
+	Before we proceed any further on this course, it is worth trying to {\color{red}\textit{define}} autonomy and in particular autonomous vehicles. Best to define \textit{levels} of autonomy.
+	\begin{columns}
+		\begin{column}{0.2\linewidth}
+			{\small The desire of researchers in autonomous systems is to move down this table to level 6...}
+		\end{column}
+		\begin{column}{0.7\linewidth}
+			\begin{figure}
+				\centering
+				\includegraphics[width=1.0\linewidth]{Autonomy_Levels}\\
+				{\scriptsize Office of Naval Research (ONR) definition of autonomy.}
+			\end{figure}
+		\end{column}
+	\end{columns}
+	\vspace{10pt}
+\end{frame}
+	
+\begin{frame}{What is an Autonomous System?}
+	But how does an automated system operate without human intervention?
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.7\linewidth]{AgentArch}\\
+		{\scriptsize Information block diagram of an autonomous agent.}
+	\end{figure}
+	Every autonomous system requires subsystems to perform three functions,
+	\begin{itemize}
+		\item Perception
+		\item Cognition
+		\item Actuation
+	\end{itemize}
+\vspace{10pt}
+\end{frame}
+
+\begin{frame}{Autonomous Vehicle Guidance}
+	The guidance problem is one of calculating a {\color{red}\textit{feasible}} path from the start point $S.P.$ to destination $D$ that is {\color{red}\textit{optimal}} in some sense.
+	%
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.6\linewidth]{MainMap}
+	\caption{Typical AVGS problem}
+	\label{fig:MainMap}
+	\end{figure}
+	%
+	\vspace{-10pt}
+	If we want to choose the optimal path, we need to encapsulate the problem mathematically. This is done by first defining a {\color{blue}\textit{cost function}}.	
+%	\begin{equation}
+%	\min_{p} J(s+\delta s,t_h+\delta t_h, e+\delta_e, p)
+%	\end{equation}\\[1cm]
+\end{frame}
+
+\begin{frame}{Cost Functions}
+	The purpose of a cost function is to mathematically encapsulate a design objective. For example, consider the design objective of minimising manoeuvre time,
+	
+	\begin{equation}
+	J_1 = \int_{S.P.}^{Dest} 1\: dt
+	\end{equation}
+	
+	Alternatively, minimising the path length would be,
+	
+	\begin{equation}
+	J_2 = \int_{S.P.}^{Dest} 1\: dl
+	\end{equation}
+	
+	Cost functions can also be combined,
+	
+	\begin{equation}
+	J = \alpha J_1 + (1-\alpha) J_2
+	\end{equation}
+	where $\alpha \in [0,1]$
+\end{frame}
+
+\begin{frame}{Aside - Guidance v.s. Control}
+	If the purpose is to move the vehicle from the start point to the end, surely this is a {\color{blue}\textit{control} }problem?\\
+	Guidance and control are closely-related. The main difference is in the level of detail used to define the vehicle dynamics. 
+
+	\begin{itemize}
+		\item Guidance - simple model
+		\item Control (autopilot) - complex dynamics model
+	\end{itemize}
+
+	\begin{figure}
+		\vspace{-10pt}
+		\centering
+		\includegraphics[width=0.6\linewidth]{GuidancevsControl}
+	\end{figure}
+	
+	\vspace{-50pt} In most cases, the output from the guidance loop is used to drive the control loop,
+\end{frame}
+
+\begin{frame}{Vehicle Models}
+	In guidance, there are two similar methods for defining the vehicle dynamics,
+	\begin{itemize}
+	\item double integrator
+	\item velocity-bearing 
+	\end{itemize}
+	\vspace{-10pt}
+	\begin{columns}[T]
+	\column{1.5cm}
+	\vspace{3.5cm}
+	Equations of motion...
+	\column{0.5\linewidth}
+	\begin{center}
+	\textit{Double integrator}
+	\end{center}
+	\vspace{-20pt}
+	\begin{figure}
+			\centering
+			\includegraphics[width=0.7\linewidth]{DoubleInt}
+	\end{figure}
+	%
+	\vspace{-25pt}
+	\begin{align*}
+	\dot{x} &= v_x\\
+	\dot{y} &= v_y\\
+	\dot{v}_x &= a_x\\
+	\dot{v}_y &= a_y
+	\end{align*}
+	
+	\column{0.5\linewidth}
+	\begin{center}
+	\textit{Velocity-Heading}
+	\end{center}
+	\vspace{-20pt}
+	\begin{figure}
+			\centering
+			\includegraphics[width=0.7\linewidth]{VelHead}
+	\end{figure}
+	\vspace{-20pt}
+	\begin{align*}
+	\dot{x} &= V_f \cos \lambda\\
+	\dot{y} &= V_f \sin \lambda\\
+	\dot{v}_x &= \dot{V}_f \cos \lambda - V_f \sin \lambda \dot{\lambda}\\
+	\dot{v}_y &= \dot{V}_f \sin \lambda + V_f \cos \lambda \dot{\lambda}
+	\end{align*}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Vehicle models}
+	Both model formulations can be expressed in state-space form. For the double integrator, define $\mv{x} \in\ \mathbb{R}^4 = [x,y,v_x,v_y]^T$ and $\mv{u}\in\ \mathbb{R}^2 = [a_x,a_y]^T$. Then
+	\begin{align*}
+	\dot{\mv{x}} &= 
+	\begin{bmatrix}
+	0 & 0 & 1 & 0\\
+	0 & 0 & 0 & 1\\
+	0 & 0 & 0 & 0\\
+	0 & 0 & 0 & 0\\
+	\end{bmatrix}
+	\mv{x} +
+	\begin{bmatrix}
+	0 & 0\\
+	0 & 0\\
+	1 & 0\\
+	0 & 1
+	\end{bmatrix}
+	\mv{u}\\
+	\Rightarrow \dot{\mv{x}} &= \mm{A}\mv{x}+\mm{B}\mv{u}
+	\end{align*}
+	Clearly, this is a linear state-space model. For the velocity/heading model, the equations of motion are fundamentally coupled and non-linear i.e.,
+	\begin{align*}
+	\dot{\mv{x}} &= f(\mv{x},\mv{u})
+	\end{align*}
+	For simplicity, the double-integrator model will be used \ldots
+\end{frame}
+
+\begin{frame}{Continuous Path Planning}
+	We are now ready to state the continuous path planning problem we need to solve.\\
+	\vspace{-20pt}
+	\begin{align*}
+	\min_{(a_x,a_y)} \: J
+	\end{align*}\\
+	\vspace{-10pt}
+	subject to,
+	\vspace{-10pt}
+	\begin{alignat*}{2}
+	\dot{x} &= v_x,\quad \dot{y} &= v_y\\
+	\dot{v}_x &= a_x, \quad \dot{v}_y &= a_y
+	\end{alignat*}\\
+	\vspace{-10pt}
+	and\\
+	\vspace{-20pt}
+	\begin{align*}
+	t&=0: x(0),y(0),v_x(0)=0, v_y(0)=0\\
+	t&=t_f: x(t_f)=x_D,y(t_f)=y_D,v_x(t_f)=0, v_y(t_f)=0
+	\end{align*}\\
+	Often, there are constraints on the available accelerations,
+	\vspace{-10pt}
+	\begin{align*}
+	a_{x,L} \leq a_x \leq a_{x,U}\\
+	a_{y,L} \leq a_y \leq a_{y,U}
+	\end{align*}\\
+	\vspace{-5pt}
+	This is a {\color{red} nonlinear programming} problem \ldots
+\end{frame}
+
+\begin{frame}{Discrete Path Planning}
+	One of the main issues in solving the general nonlinear program is the tremendous processor load required to find a solution. A practical alternative is to {\color{red}discretise} the problem\\
+	Recall the definition of the derivative applied to the $x-position$,
+	\begin{align}
+	\frac{dx(t)}{dt} &= \lim_{\Delta t \rightarrow 0}\frac{x(t+\Delta t)-x(t)}{\Delta t} = \dot{x}(t) = v_x(t) \label{eqn:deriv}
+	\end{align}\\
+	Removing the limit, the timestep becomes a design parameter. Rearranging eqn(\ref{eqn:deriv}),
+	\begin{align*}
+	x(t+\Delta t) &= x(t) + v_x \Delta t
+	\end{align*}
+	Using the notation $t+\Delta t = t_{k+1}$, this becomes,
+	\begin{align}
+	x_{k+1} &= x_k + v_{x,k} \Delta t
+	\end{align}
+	This is Eulers method for numerical integration.
+\end{frame}
+
+\begin{frame}{Discrete path planning \ldots}
+	We can then define a set of {\color{red} difference equations} to describe the vehicle dynamics,
+	\vspace{-10pt}
+	\begin{align*}
+	x_{k+1} &= x_k + v_{x,k}\Delta t\\
+	y_{k+1} &= y_k + v_{x,k}\Delta t\\
+	v_{x,k+1} &= v_{x,k} + a_{x,k}\Delta t\\
+	v_{y,k+1} &= v_{y,k} + a_{y,k}\Delta t
+	\end{align*}
+	Now assume that the acceleration inputs are confined to a finite set, for example 
+	\vspace{-10pt}
+	\begin{align*}
+	a_{x,k} &= [-5,0,5,10]^T\\
+	a_{y,k} &= [-2,0,2]^T
+	\end{align*}
+	In this example, there are 12 possible combinations of acceleration input at each time step.
+\end{frame}
+
+\begin{frame}{Discrete path planning \ldots}
+	At each time step, the system can apply accelerations along one of the following paths,
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{Powerpoint/DiscreteControlFig}
+	\label{fig:DiscreteControlFig}
+	\end{figure}
+	Integrating the chosen acceleration twice over the timestep yields 12 possible new positions. 
+\end{frame}
+
+\begin{frame}{Discrete path planning \ldots}
+	Repeating this process, we then have a {\color{red}\textit{graph}} of nodes spanning the operating environment,
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.6\linewidth]{Powerpoint/GraphOverview}
+	\label{fig:GraphOverview}
+	\end{figure}
+	The discrete path planning problem is then one of selecting the series of control inputs $\mv{u}_i, i=1\ldots N$ that is feasible and reaches the destination while minimising some discrete cost function.
+\end{frame}
